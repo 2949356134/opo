@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.js"></script>
+		<script type="text/javascript" src="https://webapi.amap.com/maps?v=1.4.15&key=0021a202682123264fae5cf7a3c69b35"></script>
+		<link rel="shortcut icon" href="#" />
+		<title>测试</title>
+	</head>
+	<body>
+		<div id="map"></div>
+		<script charset='utf-8'>
+			var flag=0;
+			window.onload=function(){
+				Location(); //记得在最后执行一下调用就好了
+			}
+			function Location(){   //函数名location关键字
+				if(navigator.geolocation){   //检测当前设备是否支持H5Geolocation API
+					navigator.geolocation.getCurrentPosition(showmap,error,{
+						enableHighAccuracy: true,//是否要求高精度的地理位置信息
+						timeout: 1000,//对地理位置信息的获取操作做超时限制，如果再该事件内未获取到地理位置信息，将返回错误
+						maximumAge:60*1000//设置缓存有效时间，在该时间段内，获取的地理位置信息还是设置此时间段之前的那次获得的信息，超过这段时间缓存的位置信息会被废弃
+					});
+				}else{
+					alert("该浏览器不支持获取地理位置");
+				}
+			}
+			
+			function showmap(position){//.强调coords
+				var cords = position.coords;
+				var latitude = cords.latitude;      //获取纬度
+				var longitude = cords.longitude;    //获取经度
+				var xy=document.getElementById("map");
+				xy.innerHTML="当前位置：+"+"latitude:"+latitude+"+longitude:"+longitude;
+				console.log('https://restapi.amap.com/v3/geocode/regeo?key=2107405f6d6517de985c21c8cc7962e9&location='+longitude+','+latitude)
+				$.ajax({
+				    type:'GET',
+				    url:'https://restapi.amap.com/v3/geocode/regeo?key=2107405f6d6517de985c21c8cc7962e9&location='+longitude+','+latitude,
+				    // contentType:"application/x-www-form-urlencoded;",
+				    dataType:'json',
+				    success:function(r) {
+						xy.innerHTML="当前位置："+r.regeocode.formatted_address;
+					},
+					error:function(r){
+					}
+				});
+			}
+			function error(error){
+				var err = error.code;
+				switch(err){
+					case 1:alert("用户拒绝了位置服务");
+						break;
+					case 2:alert("获取不到位置信息");
+						break;
+					case 3:
+						if(flag<5){
+							Location();
+							flag=flag+1
+						}else{
+							alert("获取信息超时");
+						}
+						break;
+				}
+			}
+		</script>
+	</body>
+</html>
